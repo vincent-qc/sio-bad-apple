@@ -1,3 +1,5 @@
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const fetchTextFile = async (url) => {
   try {
     const response = await fetch(url);
@@ -13,15 +15,7 @@ const fetchTextFile = async (url) => {
   }
 };
 
-// Example usage:
-const url =
-  "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/compressed.txt";
-fetchTextFile(url).then((lines) => {
-  console.log("Loaded lines:", lines);
-  // Perform actions with the lines array
-});
-
-const floodfill = (grid, width, height) => {
+const floodfill = async (grid, width, height) => {
   const directions = [
     [0, 1],
     [1, 0],
@@ -73,6 +67,28 @@ const floodfill = (grid, width, height) => {
         grid[ny][nx] = block;
         queue.push([ny, nx, block]);
       }
+      await sleep(10);
+    }
+  }
+};
+
+const applyFrameToGrid = (frame, grid) => {
+  const frameRows = 20;
+  const frameCols = 20;
+  const gridRows = grid.length;
+
+  for (let i = 0; i < frameRows; i++) {
+    const gridRow = Math.floor(i * (gridRows / frameRows));
+    for (let j = 0; j < frameCols; j++) {
+      if (frame[i * frameCols + j] === "b") {
+        if (grid[gridRow] && grid[gridRow][j]) {
+          grid[gridRow][j].style.opacity = 0;
+        }
+      } else {
+        if (grid[gridRow] && grid[gridRow][j]) {
+          grid[gridRow][j].style.opacity = 1;
+        }
+      }
     }
   }
 };
@@ -80,7 +96,7 @@ const floodfill = (grid, width, height) => {
 const run = async () => {
   // Download compressed video
   const url =
-    "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/compressed.txt";
+    "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/refs/heads/main/badapple.txt";
   const lines = await fetchTextFile(url);
 
   console.log("Loaded lines:", lines);
@@ -105,7 +121,7 @@ const run = async () => {
   }
 
   // Create grid
-  const gridheight = Math.ceil(timeintervals.length / 12);
+  const gridheight = Math.ceil(timeintervals.length / 24);
   const gridwidth = 5 * 4; // 5 days in a week, 4 blocks per slot
   const grid = Array.from({ length: gridheight }, () =>
     Array.from({ length: gridwidth }, () => null)
@@ -132,4 +148,16 @@ const run = async () => {
 
   // Run floodfill algorithm
   floodfill(grid, blockWidth, blockHeight);
+
+  // Run animation
+  let currentFrame = 0;
+  const animate = () => {
+    if (currentFrame >= lines.length) {
+      return;
+    }
+    applyFrameToGrid(lines[currentFrame], grid);
+    currentFrame++;
+    setTimeout(animate, 1000 / 15);
+  };
+  animate();
 };

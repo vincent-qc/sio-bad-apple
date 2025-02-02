@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 
-def process_video(video_path, output_path, frames_per_line=4, grid_rows=20, grid_cols=20):
+def process_video(video_path, output_path, frames_per_line=4, grid_rows=40, grid_cols=40):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Error: Cannot open video file {video_path}")
