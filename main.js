@@ -1,3 +1,26 @@
+const fetchTextFile = async (url) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const text = await response.text();
+    const lines = text.split("\n");
+    return lines;
+  } catch (error) {
+    console.error("Error fetching the text file:", error);
+    return [];
+  }
+};
+
+// Example usage:
+const url =
+  "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/compressed.txt";
+fetchTextFile(url).then((lines) => {
+  console.log("Loaded lines:", lines);
+  // Perform actions with the lines array
+});
+
 const floodfill = (grid, width, height) => {
   const directions = [
     [0, 1],
@@ -54,7 +77,14 @@ const floodfill = (grid, width, height) => {
   }
 };
 
-const run = () => {
+const run = async () => {
+  // Download compressed video
+  const url =
+    "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/compressed.txt";
+  const lines = await fetchTextFile(url);
+
+  console.log("Loaded lines:", lines);
+
   // Resize calendar
   const container = document.getElementById("main-container");
   const calendar = document.querySelector(
