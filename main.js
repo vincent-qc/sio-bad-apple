@@ -1,5 +1,5 @@
-// const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const sleep = (ms) => {};
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// const sleep = (ms) => {};
 
 const fetchTextFile = async (url) => {
   try {
@@ -41,7 +41,7 @@ const floodfill = async (grid, width, height) => {
     }
   }
 
-  const counter = 0;
+  let counter = 0;
 
   while (queue.length > 0) {
     const [y, x, block] = queue.shift();
@@ -71,7 +71,7 @@ const floodfill = async (grid, width, height) => {
         queue.push([ny, nx, block]);
       }
     }
-    if (counter % 2 == 0) await sleep(1);
+    if (counter % 10 < 5) await sleep(1);
     else counter++;
   }
 };
@@ -104,6 +104,7 @@ const run = async () => {
   const audio = new Audio(
     "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/badapple.mp3"
   );
+  audio.volume = 0.5;
   const url =
     "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/refs/heads/main/badapple.txt";
   const lines = await fetchTextFile(url);
@@ -129,26 +130,26 @@ const run = async () => {
 
   // Create grid
   const gridheight = Math.ceil(timeintervals.length / 6);
-  const gridwidth = 5 * 4; // 5 days in a week, 4 blocks per slot
+  const gridwidth = 5 * 6; // 5 days in a week, 6 blocks per slot
   const grid = Array.from({ length: gridheight }, () =>
     Array.from({ length: gridwidth }, () => null)
   );
 
   // Create block height to resize and reposition caldendar
   const blockHeight = (timeintervals[0].clientHeight * 13.5) / 2;
-  const blockWidth = timeintervals[0].clientWidth / 20;
+  const blockWidth = timeintervals[0].clientWidth / 30;
 
   // Resize and reposition calendar
   const blocks = document.querySelectorAll(".gwt-appointment");
   for (const block of blocks) {
-    const xpos = Math.floor(parseInt(block.style.left) / 5);
+    const xpos = Math.floor(parseInt(block.style.left) / 3.3);
     const ypos = Math.floor(parseInt(block.style.top) / blockHeight); // We floor here as SIO's blocks are lower than expected
     block.style.height = `${blockHeight}px`;
     block.style.width = `${blockWidth}px`;
     block.style.top = `${ypos * blockHeight}px`;
     block.style.left = `${xpos * blockWidth}px`;
     grid[ypos][xpos] = block;
-    await sleep(100);
+    await sleep(20);
   }
 
   // Run floodfill algorithm
@@ -168,5 +169,7 @@ const run = async () => {
   audio.play();
   setTimeout(() => {
     animate();
-  }, 1000);
+  }, 200);
 };
+
+run();
