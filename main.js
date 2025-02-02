@@ -1,4 +1,4 @@
-const floodfill = (grid) => {
+const floodfill = (grid, width, height) => {
   const directions = [
     [0, 1],
     [1, 0],
@@ -6,26 +6,51 @@ const floodfill = (grid) => {
     [-1, 0],
   ];
 
-  const checkbounds = (x, y) => {
-    return x >= 0 && x < grid.length && y >= 0 && y < grid[0].length;
+  const checkbounds = (y, x) => {
+    return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length;
   };
 
-  const firstblock = (() => {
-    for (let i = 0; i < grid.length; i++) {
-      for (let j = 0; j < grid[i].length; j++) {
-        if (grid[i][j] !== null) {
-          return [i, j, grid[i][j]];
-        }
+  const queue = [];
+  const visited = new Set();
+  const initial = new Set();
+
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[0].length; x++) {
+      if (grid[y][x] !== null) {
+        queue.push([y, x, grid[y][x]]);
+        initial.add(`${y},${x}`);
       }
     }
-  })();
+  }
 
-  const queue = [];
-  queue.push(firstblock);
+  while (queue.length > 0) {
+    const [y, x, block] = queue.shift();
 
-  queue.push;
-  for (let i = 0; i < grid.length; i++) {
-    for (let j = 0; j < grid[i].length; j++) {}
+    // Skip if already visited
+    if (visited.has(`${y},${x}`)) {
+      continue;
+    } else {
+      visited.add(`${y},${x}`);
+    }
+
+    // Create new block at new grid position
+    if (!initial.has(`${y},${x}`)) {
+      const clone = block.cloneNode(true);
+      block.parentNode.appendChild(clone);
+      clone.style.top = `${y * height}px`;
+      clone.style.left = `${x * width}px`;
+      grid[y][x] = clone;
+    }
+
+    // Fill neighboring blocks with same block
+    for (const [dy, dx] of directions) {
+      const ny = y + dy;
+      const nx = x + dx;
+      if (checkbounds(ny, nx) && grid[ny][nx] === null) {
+        grid[ny][nx] = block;
+        queue.push([ny, nx, block]);
+      }
+    }
   }
 };
 
@@ -62,6 +87,8 @@ const run = () => {
     console.log(xpos, ypos);
     grid[ypos][xpos] = block;
   });
+
+  floodfill(grid, blockWidth, blockHeight);
 
   console.log(grid);
 };
