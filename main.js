@@ -40,6 +40,8 @@ const floodfill = async (grid, width, height) => {
     }
   }
 
+  const counter = 0;
+
   while (queue.length > 0) {
     const [y, x, block] = queue.shift();
 
@@ -67,26 +69,29 @@ const floodfill = async (grid, width, height) => {
         grid[ny][nx] = block;
         queue.push([ny, nx, block]);
       }
-      await sleep(10);
     }
+    if (counter % 2 == 0) await sleep(1);
+    else counter++;
   }
 };
 
 const applyFrameToGrid = (frame, grid) => {
-  const frameRows = 20;
-  const frameCols = 20;
+  const frameRows = 40;
+  const frameCols = 40;
   const gridRows = grid.length;
+  const gridCols = grid[0].length;
 
   for (let i = 0; i < frameRows; i++) {
     const gridRow = Math.floor(i * (gridRows / frameRows));
     for (let j = 0; j < frameCols; j++) {
+      const gridCol = Math.floor(j * (gridCols / frameCols));
       if (frame[i * frameCols + j] === "b") {
-        if (grid[gridRow] && grid[gridRow][j]) {
-          grid[gridRow][j].style.opacity = 0;
+        if (grid[gridRow] && grid[gridRow][gridCol]) {
+          grid[gridRow][gridCol].style.opacity = 0;
         }
       } else {
-        if (grid[gridRow] && grid[gridRow][j]) {
-          grid[gridRow][j].style.opacity = 1;
+        if (grid[gridRow] && grid[gridRow][gridCol]) {
+          grid[gridRow][gridCol].style.opacity = 1;
         }
       }
     }
@@ -98,8 +103,6 @@ const run = async () => {
   const url =
     "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/refs/heads/main/badapple.txt";
   const lines = await fetchTextFile(url);
-
-  console.log("Loaded lines:", lines);
 
   // Resize calendar
   const container = document.getElementById("main-container");
@@ -121,33 +124,31 @@ const run = async () => {
   }
 
   // Create grid
-  const gridheight = Math.ceil(timeintervals.length / 24);
+  const gridheight = Math.ceil(timeintervals.length / 6);
   const gridwidth = 5 * 4; // 5 days in a week, 4 blocks per slot
   const grid = Array.from({ length: gridheight }, () =>
     Array.from({ length: gridwidth }, () => null)
   );
 
   // Create block height to resize and reposition caldendar
-  const blockHeight = timeintervals[0].clientHeight * 13.5;
+  const blockHeight = (timeintervals[0].clientHeight * 13.5) / 2;
   const blockWidth = timeintervals[0].clientWidth / 20;
 
   // Resize and reposition calendar
   const blocks = document.querySelectorAll(".gwt-appointment");
-  blocks.forEach((block) => {
+  for (const block of blocks) {
     const xpos = Math.floor(parseInt(block.style.left) / 5);
     const ypos = Math.floor(parseInt(block.style.top) / blockHeight); // We floor here as SIO's blocks are lower than expected
-
     block.style.height = `${blockHeight}px`;
     block.style.width = `${blockWidth}px`;
     block.style.top = `${ypos * blockHeight}px`;
     block.style.left = `${xpos * blockWidth}px`;
-
-    console.log(xpos, ypos);
     grid[ypos][xpos] = block;
-  });
+    await sleep(100);
+  }
 
   // Run floodfill algorithm
-  floodfill(grid, blockWidth, blockHeight);
+  await floodfill(grid, blockWidth, blockHeight);
 
   // Run animation
   let currentFrame = 0;
@@ -159,5 +160,6 @@ const run = async () => {
     currentFrame++;
     setTimeout(animate, 1000 / 15);
   };
-  animate();
+
+  setTimeout(animate, 1000);
 };
