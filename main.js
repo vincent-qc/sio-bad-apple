@@ -55,6 +55,18 @@ const floodfill = (grid, width, height) => {
 };
 
 const run = () => {
+  // Resize calendar
+  const container = document.getElementById("main-container");
+  const calendar = document.querySelector(
+    ".f-pnl.col-lg-8.float-left.pad-right-none"
+  );
+  const courses = document.querySelector(
+    ".f-pnl.right-portal-col.side-tips.col-lg-4.float-right.side-tips-collapse-middle.pad-right-none"
+  );
+  container.style.maxWidth = "100%";
+  calendar.style.maxWidth = "80%";
+  courses.style.maxWidth = "20%";
+
   // Compute calendar grid
   const timeintervals = document.querySelectorAll(".minor-time-interval");
   if (timeintervals.length < 1) {
@@ -64,19 +76,19 @@ const run = () => {
 
   // Create grid
   const gridheight = Math.ceil(timeintervals.length / 12);
-  const gridwidth = 5 * 2; // 5 days in a week, 2 blocks per slot
+  const gridwidth = 5 * 4; // 5 days in a week, 4 blocks per slot
   const grid = Array.from({ length: gridheight }, () =>
     Array.from({ length: gridwidth }, () => null)
   );
 
   // Create block height to resize and reposition caldendar
   const blockHeight = timeintervals[0].clientHeight * 13.5;
-  const blockWidth = timeintervals[0].clientWidth / 10;
+  const blockWidth = timeintervals[0].clientWidth / 20;
 
   // Resize and reposition calendar
   const blocks = document.querySelectorAll(".gwt-appointment");
   blocks.forEach((block) => {
-    const xpos = Math.floor(parseInt(block.style.left) / 10);
+    const xpos = Math.floor(parseInt(block.style.left) / 5);
     const ypos = Math.floor(parseInt(block.style.top) / blockHeight); // We floor here as SIO's blocks are lower than expected
 
     block.style.height = `${blockHeight}px`;
@@ -88,7 +100,6 @@ const run = () => {
     grid[ypos][xpos] = block;
   });
 
+  // Run floodfill algorithm
   floodfill(grid, blockWidth, blockHeight);
-
-  console.log(grid);
 };
