@@ -1,4 +1,5 @@
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => {};
 
 const fetchTextFile = async (url) => {
   try {
@@ -99,7 +100,10 @@ const applyFrameToGrid = (frame, grid) => {
 };
 
 const run = async () => {
-  // Download compressed video
+  // Download data
+  const audio = new Audio(
+    "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/badapple.mp3"
+  );
   const url =
     "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/refs/heads/main/badapple.txt";
   const lines = await fetchTextFile(url);
@@ -158,8 +162,11 @@ const run = async () => {
     }
     applyFrameToGrid(lines[currentFrame], grid);
     currentFrame++;
-    setTimeout(animate, 1000 / 15);
+    setTimeout(animate, 1000 / 8);
   };
 
-  setTimeout(animate, 1000);
+  audio.play();
+  setTimeout(() => {
+    animate();
+  }, 1000);
 };
