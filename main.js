@@ -1,5 +1,4 @@
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-// const sleep = (ms) => {};
 
 const fetchTextFile = async (url) => {
   try {
@@ -8,8 +7,7 @@ const fetchTextFile = async (url) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const text = await response.text();
-    const lines = text.split("\n");
-    return lines;
+    return text.split("\n");
   } catch (error) {
     console.error("Error fetching the text file:", error);
     return [];
@@ -28,14 +26,13 @@ const floodfill = async (grid, width, height) => {
     [-1, -1],
   ];
 
-  const checkbounds = (y, x) => {
-    return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length;
-  };
-
+  const checkbounds = (y, x) =>
+    y >= 0 && y < grid.length && x >= 0 && x < grid[0].length;
   const queue = [];
   const visited = new Set();
   const initial = new Set();
 
+  // Add all grid positions that already have a block to the queue.
   for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid[0].length; x++) {
       if (grid[y][x] !== null) {
@@ -45,39 +42,44 @@ const floodfill = async (grid, width, height) => {
     }
   }
 
-  let counter = 0;
+  const CHUNK_SIZE = 30; // Adjust for responsiveness
+  async function processQueueChunk() {
+    let iterations = 0;
+    while (queue.length > 0 && iterations < CHUNK_SIZE) {
+      const [y, x, block] = queue.shift();
 
-  while (queue.length > 0) {
-    const [y, x, block] = queue.shift();
-
-    // Skip if already visited
-    if (visited.has(`${y},${x}`)) {
-      continue;
-    } else {
-      visited.add(`${y},${x}`);
-    }
-
-    // Create new block at new grid position
-    if (!initial.has(`${y},${x}`)) {
-      const clone = block.cloneNode(true);
-      block.parentNode.appendChild(clone);
-      clone.style.top = `${y * height}px`;
-      clone.style.left = `${x * width}px`;
-      grid[y][x] = clone;
-    }
-
-    // Fill neighboring blocks with same block
-    for (const [dy, dx] of directions) {
-      const ny = y + dy;
-      const nx = x + dx;
-      if (checkbounds(ny, nx) && grid[ny][nx] === null) {
-        grid[ny][nx] = block;
-        queue.push([ny, nx, block]);
+      if (visited.has(`${y},${x}`)) {
+        iterations++;
+        continue;
       }
+      visited.add(`${y},${x}`);
+
+      if (!initial.has(`${y},${x}`)) {
+        const clone = block.cloneNode(true);
+        block.parentNode.appendChild(clone);
+        clone.style.top = `${y * height}px`;
+        clone.style.left = `${x * width}px`;
+        grid[y][x] = clone;
+      }
+
+      for (const [dy, dx] of directions) {
+        const ny = y + dy;
+        const nx = x + dx;
+        if (checkbounds(ny, nx) && grid[ny][nx] === null) {
+          grid[ny][nx] = block;
+          queue.push([ny, nx, block]);
+        }
+      }
+      iterations++;
     }
-    if (counter % 10 < 5) await sleep(1);
-    else counter++;
+    if (queue.length > 0) {
+      // Yield control a bit before processing the next chunk.
+      await sleep(20);
+      await processQueueChunk();
+    }
   }
+
+  await processQueueChunk();
 };
 
 const applyFrameToGrid = (frame, grid) => {
@@ -104,16 +106,24 @@ const applyFrameToGrid = (frame, grid) => {
 };
 
 const run = async () => {
-  // Download data
+  // Set up and preload the audio.
   const audio = new Audio(
     "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/badapple.mp3"
   );
+  audio.preload = "auto";
   audio.volume = 0.5;
+
+  // Wait until the audio is ready.
+  await new Promise((resolve) => {
+    audio.addEventListener("canplaythrough", resolve, { once: true });
+  });
+
+  // Fetch the text file (frame data).
   const url =
     "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/refs/heads/main/badapple.txt";
   const lines = await fetchTextFile(url);
 
-  // Resize calendar
+  // Resize calendar (example elements).
   const container = document.getElementById("main-container");
   const calendar = document.querySelector(
     ".f-pnl.col-lg-8.float-left.pad-right-none"
@@ -125,29 +135,29 @@ const run = async () => {
   calendar.style.maxWidth = "80%";
   courses.style.maxWidth = "20%";
 
-  // Compute calendar grid
+  // Get the grid using time intervals.
   const timeintervals = document.querySelectorAll(".minor-time-interval");
   if (timeintervals.length < 1) {
     console.error("No time intervals found");
     return;
   }
 
-  // Create grid
+  // Create grid dimensions.
   const gridheight = Math.ceil(timeintervals.length / 6);
-  const gridwidth = 5 * 6; // 5 days in a week, 6 blocks per slot
+  const gridwidth = 5 * 6; // 5 days in a week, 6 blocks per slot.
   const grid = Array.from({ length: gridheight }, () =>
     Array.from({ length: gridwidth }, () => null)
   );
 
-  // Create block height to resize and reposition caldendar
+  // Calculate block dimensions.
   const blockHeight = (timeintervals[0].clientHeight * 13.5) / 2;
   const blockWidth = timeintervals[0].clientWidth / 30;
 
-  // Resize and reposition calendar
+  // Reposition and resize calendar blocks.
   const blocks = document.querySelectorAll(".gwt-appointment");
   for (const block of blocks) {
     const xpos = Math.floor(parseInt(block.style.left) / 3.3);
-    const ypos = Math.floor(parseInt(block.style.top) / blockHeight); // We floor here as SIO's blocks are lower than expected
+    const ypos = Math.floor(parseInt(block.style.top) / blockHeight);
     block.style.height = `${blockHeight}px`;
     block.style.width = `${blockWidth}px`;
     block.style.top = `${ypos * blockHeight}px`;
@@ -156,22 +166,18 @@ const run = async () => {
     await sleep(20);
   }
 
-  // Run floodfill algorithm
-  await floodfill(grid, blockWidth, blockHeight);
+  // Start the heavy processing after a brief delay.
+  setTimeout(async () => {
+    await floodfill(grid, blockWidth, blockHeight);
 
-  // Run animation
-  let currentFrame = 0;
-  const animate = () => {
-    if (currentFrame >= lines.length) {
-      return;
-    }
-    applyFrameToGrid(lines[currentFrame], grid);
-    currentFrame++;
-    setTimeout(animate, 1000 / 8);
-  };
-
-  audio.play();
-  setTimeout(() => {
+    // Start the frame animation.
+    let currentFrame = 0;
+    const animate = () => {
+      if (currentFrame >= lines.length) return;
+      applyFrameToGrid(lines[currentFrame], grid);
+      currentFrame++;
+      setTimeout(animate, 1000 / 7.8);
+    };
     animate();
   }, 200);
 };
