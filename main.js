@@ -22,6 +22,10 @@ const floodfill = async (grid, width, height) => {
     [1, 0],
     [0, -1],
     [-1, 0],
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+    [-1, -1],
   ];
 
   const checkbounds = (y, x) => {
