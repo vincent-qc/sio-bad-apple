@@ -110,6 +110,7 @@ const run = async () => {
   const audio = new Audio(
     "https://raw.githubusercontent.com/vincent-qc/bad-sio-apple/main/badapple.mp3"
   );
+  audio.crossOrigin = "anonymous";
   audio.preload = "auto";
   audio.volume = 0.5;
 
@@ -166,20 +167,21 @@ const run = async () => {
     await sleep(20);
   }
 
+  await floodfill(grid, blockWidth, blockHeight);
+
   // Start the heavy processing after a brief delay.
   setTimeout(async () => {
-    await floodfill(grid, blockWidth, blockHeight);
-
+    audio.play();
     // Start the frame animation.
     let currentFrame = 0;
     const animate = () => {
       if (currentFrame >= lines.length) return;
       applyFrameToGrid(lines[currentFrame], grid);
       currentFrame++;
-      setTimeout(animate, 1000 / 7.8);
+      setTimeout(animate, 128);
     };
     animate();
-  }, 200);
+  }, 400);
 };
 
 run();
