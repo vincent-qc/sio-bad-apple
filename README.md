@@ -1,4 +1,14 @@
-# Bad Apple on SIO
+<div align='center'>
+	<h1 align='center'>Bad Apple on SIO</h1>
+	<img
+	    src="https://img.shields.io/github/license/vincent-qc/sio-bad-apple?style=for-the-badge"
+	    alt="License"
+	/>
+  <img
+    src="https://img.shields.io/github/languages/top/vincent-qc/sio-bad-apple.svg?style=for-the-badge&color=yellow"
+    alt="Language"
+  />
+</div>
 
 ## Demo
 https://github.com/user-attachments/assets/83733d75-9b54-4449-aaaf-513a10ad2382
