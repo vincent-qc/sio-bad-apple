@@ -18,7 +18,7 @@ This program is designed to be run on any browser console. Thus, to run the prog
 1. Log into SIO using your AndrewID
 2. Navigate to the `Plan Course Schedule` tab, **not** the `Semester Schedule` tab).
 3. Open the `browser console` by `right click > inspect > console`.
-4. Paste the code from [main.js](./main.js) into the console and run.
+4. Paste the code from [minified.js](./minified.js) or [main.js](./main.js) into the console and run.
 
 Have fun!
 
